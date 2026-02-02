@@ -1,46 +1,55 @@
-import express from "express";
-import mongoose from "mongoose"
 
-interface App_Interface {
-    startServer(): void;
-    connectDatabase(): void;
-    initializeRoutes(): void;
+import express, { Express, Request, Response, NextFunction } from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import { studentRoutes } from "./routes/student.routes";
+import { subjectRoutes } from "./routes/subject.routes";
+import { enrollmentRoutes } from "./routes/enrollment.routes";
+import { examRoutes } from "./routes/exam.routes";
+import { markRoutes } from "./routes/mark.routes";
+import { gradeRuleRoutes } from "./routes/gradeRule.routes";
+import { analyticsRoutes } from "./routes/analytics.routes";
+import { errorHandler } from "./middleware/errorHandler";
+import { AppError } from "./utils/AppError";
 
-}
+dotenv.config();
 
-import { ToDoRoutes } from "./Routes/todo.routes";
+const app: Express = express();
 
-export class App implements App_Interface {
+app.use(cors());
+app.use(express.json());
 
-    PORT: number;
-    app: express.Application;
+app.use("/students", studentRoutes);
+app.use("/subjects", subjectRoutes);
+app.use("/enrollments", enrollmentRoutes);
+app.use("/exams", examRoutes);
+app.use("/marks", markRoutes);
+app.use("/grade-rules", gradeRuleRoutes);
+app.use("/analytics", analyticsRoutes);
 
-    constructor() {
-        this.PORT = 4000
-        this.app = express();
-        this.app.use(express.json());
-        this.app.use(express.urlencoded({ extended: true }));
-        this.startServer();
-        this.initializeRoutes()
-        this.connectDatabase();
-    }
+app.get("/", (req: Request, res: Response) => {
+    res.status(200).json({ status: "success", message: "ARMS API is running" });
+});
 
-    startServer(): void {
-        this.app.listen(this.PORT, () => {
-            console.log("Server is Running")
-        })
-    };
-    async connectDatabase(): Promise<void> {
-        try {
-            // Replace with your actual valid connection string or environment variable
-            await mongoose.connect("mongodb://localhost:27017/todo-oop")
-            console.log("Database Connected")
-        } catch (err) {
-            console.log("URL Not Found", err)
-        }
-    };
-    initializeRoutes(): void {
-        const todoRoutes = new ToDoRoutes();
-        this.app.use("/api", todoRoutes.router);
-    };
-}
+app.use((req: Request, res: Response, next: NextFunction) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/arms_db";
+
+mongoose.connect(MONGO_URI)
+    .then(() => {
+        console.log("Connected to MongoDB");
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.error("MongoDB connection error:", err);
+    });
+
+export default app;
