@@ -1,5 +1,5 @@
 
-# Academic Result Management System (ARMS)
+# Academic Result Management System
 
 A comprehensive backend system for managing student results, exams, and academic records.
 
