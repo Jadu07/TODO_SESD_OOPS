@@ -3,13 +3,7 @@ import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { studentRoutes } from "./routes/student.routes";
-import { subjectRoutes } from "./routes/subject.routes";
-import { enrollmentRoutes } from "./routes/enrollment.routes";
-import { examRoutes } from "./routes/exam.routes";
-import { markRoutes } from "./routes/mark.routes";
-import { gradeRuleRoutes } from "./routes/gradeRule.routes";
-import { analyticsRoutes } from "./routes/analytics.routes";
+import { routes } from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
 import { AppError } from "./utils/AppError";
 
@@ -20,13 +14,7 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/students", studentRoutes);
-app.use("/subjects", subjectRoutes);
-app.use("/enrollments", enrollmentRoutes);
-app.use("/exams", examRoutes);
-app.use("/marks", markRoutes);
-app.use("/grade-rules", gradeRuleRoutes);
-app.use("/analytics", analyticsRoutes);
+app.use(routes);
 
 app.get("/", (req: Request, res: Response) => {
     res.status(200).json({ status: "success", message: "ARMS API is running" });
